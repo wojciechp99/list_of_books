@@ -1,0 +1,24 @@
+
+{% extends 'base.html' %}
+
+
+{% block content %}
+<form class="d-flex" method=POST>
+    {% csrf_token %}
+    <div class="col-xs-2">
+        <input class="form-control me-2" type="search" placeholder="Author name or title" aria-label="Search"
+               name="searched">
+    </div>
+    <button class="btn btn-outline-success" type="submit">
+        Search Book
+    </button>
+</form>
+<ul>
+    {% for book in books %}
+    <li>
+        <a href="{% url 'detail_book' pk=book.id %}">{{ book.title }}</a>
+    </li>
+    {% endfor %}
+</ul>
+
+{% endblock %}

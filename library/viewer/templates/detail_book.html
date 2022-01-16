@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>{{ book.title }}</h1>
+<p>Published: {{ book.publication_date }}</p>
+<h3>author: {{ book.author }}</h3>
+<h3>ISBN number: {{ book.ISBN_number }}</h3>
+<h3>pages: {{ book.pages }}</h3>
+<p>preview_link: {{ book.preview_link }}</p>
+<p>language: {{ book.language }}</p>
+
+<a class="btn btn-primary" href="{% url 'update_book' book.id %}">Update Movie</a>
+<a class="btn btn-danger" href="{% url 'delete_book' book.id %}">Delete Movie</a>
+{% endblock %}

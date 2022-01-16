@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+
+{% block content %}
+<h1>Import books from google api</h1>
+<form action="{% url 'import_books' %}">
+    {% csrf_token %}
+    <div>
+        <label for="book_id">Write a book name:
+            <input type="text" id="book_id" name="book_id" placeholder="Name is required" required/>
+        </label>
+    </div>
+    <br>
+    <input type="submit" value="Submit" class="btn btn-primary">
+</form>
+{% endblock %}
