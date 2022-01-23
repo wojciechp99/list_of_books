@@ -82,3 +82,39 @@ def import_books(request):
         return render(request, template_name='status_code.html', context={'status_code': get_api.status_code})
 
     return render(request, template_name='book_list.html', context={'books': Book.objects.all()})
+
+
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from .serializers import BookSerialized
+from rest_framework import filters, generics
+
+
+@api_view(['GET'])
+def api_overview(request):
+    from django.http import JsonResponse
+    api_urls = {
+        'List': '/book-list/',
+        'Search': '/book_search/',
+        'Detail View': '/book-detail/<int:pk>/',
+        'Create': '/book-create/<int:pk>/',
+        'Update': '/book-update/<int:pk>/',
+        'Delete': '/book-delete/<int:pk>/',
+    }
+
+    return Response(api_urls)
+
+
+@api_view(['GET'])
+def bookList(request):
+    books = Book.objects.all()
+    serializer = BookSerialized(books, many=True)
+    return Response(serializer.data)
+
+
+class BookListView(generics.ListAPIView):
+    queryset = Book.objects.all()
+    serializer_class = BookSerialized
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['title', 'author', 'ISBN_number', 'language']
+
