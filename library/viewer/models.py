@@ -6,9 +6,9 @@ class Book(Model):
     author = CharField(max_length=128)
     # publication_date = DateField()
     publication_date = CharField(max_length=15)
-    ISBN_number = CharField(max_length=128)
-    pages = IntegerField()
-    preview_link = URLField()
+    ISBN_number = CharField(max_length=128, blank=True)
+    pages = IntegerField(blank=True)
+    preview_link = URLField(blank=True)
     language = CharField(max_length=28)
 
     def __str__(self):
