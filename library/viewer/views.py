@@ -92,7 +92,6 @@ from rest_framework import filters, generics
 
 @api_view(['GET'])
 def api_overview(request):
-    from django.http import JsonResponse
     api_urls = {
         'List': '/book-list/',
         'Search': '/book_search/',
@@ -101,15 +100,47 @@ def api_overview(request):
         'Update': '/book-update/<int:pk>/',
         'Delete': '/book-delete/<int:pk>/',
     }
-
     return Response(api_urls)
 
 
 @api_view(['GET'])
-def bookList(request):
+def book_list(request):
     books = Book.objects.all()
     serializer = BookSerialized(books, many=True)
     return Response(serializer.data)
+
+
+@api_view(['GET'])
+def book_detail(request, pk):
+    books = Book.objects.get(id=pk)
+    serializer = BookSerialized(books, many=False)
+    return Response(serializer.data)
+
+
+@api_view(['POST'])
+def book_update(request, pk):
+    book = Book.objects.get(id=pk)
+    serializer = BookSerialized(instance=book, data=request.data)
+
+    if serializer.is_valid():
+        serializer.save()
+    return Response(serializer.data)
+
+
+@api_view(['POST'])
+def book_create(request):
+    serializer = BookSerialized(data=request.data)
+
+    if serializer.is_valid():
+        serializer.save()
+    return Response(serializer.data)
+
+
+@api_view(['DELETE'])
+def book_delete(request, pk):
+    book = Book.objects.get(id=pk)
+    book.delete()
+    return Response("Item deleted successfully")
 
 
 class BookListView(generics.ListAPIView):
