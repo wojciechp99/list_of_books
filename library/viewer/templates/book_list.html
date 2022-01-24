@@ -3,12 +3,47 @@
 
 {% block content %}
 <h1>All books</h1>
-<ul>
+<table class="table">
+    <thead>
+    <tr>
+        <th scope="col" style="text-align: center; vertical-align: middle;">#</th>
+        <th scope="col" style="text-align: center; vertical-align: middle;">Title</th>
+        <th scope="col" style="text-align: center; vertical-align: middle;">Author</th>
+        <th scope="col" style="text-align: center; vertical-align: middle;">ISBN</th>
+        <th scope="col" style="text-align: center; vertical-align: middle;">Pages</th>
+        <th scope="col" style="text-align: center; vertical-align: middle;">Language</th>
+        <th scope="col" style="text-align: center; vertical-align: middle;">Publication date</th>
+    </tr>
+    </thead>
+    <tbody>
     {% for book in books %}
-    <li>
-        <a href="{% url 'detail_book' pk=book.id %}">{{ book.title }}</a>
-    </li>
+    <tr>
+        <th style="text-align: center; vertical-align: middle;">{{ forloop.counter }}</th>
+        <td style="text-align: center; vertical-align: middle;">
+            <a href="{% url 'detail_book' pk=book.id %}">
+                {{ book.title }}
+            </a>
+        </td>
+        <td style="text-align: center; vertical-align: middle;">
+            {{ book.author }}
+        </td>
+        <td style="text-align: center; vertical-align: middle;">
+            {{ book.ISBN_number }}
+        </td>
+        <td style="text-align: center; vertical-align: middle;">
+            {{ book.pages }}
+        </td>
+        <td style="text-align: center; vertical-align: middle;">
+            {{ book.language }}
+        </td>
+        <td style="text-align: center; vertical-align: middle;">
+            {{ book.publication_date }}
+        </td>
+    </tr>
     {% endfor %}
-</ul>
+    </tbody>
+</table>
+
+
 
 {% endblock %}
