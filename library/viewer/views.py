@@ -49,18 +49,22 @@ def list_of_books(request):
 
 
 def search_bar(request):
-    if request.method == "POST":
-        searched = request.POST['searched']
-        books = Book.objects.filter(title__contains=searched)
-        if not books:
-            books = Book.objects.filter(author__contains=searched)
-        if not books:
-            books = Book.objects.filter(language=searched)
-        if not books:
-            books = Book.objects.filter(publication_date__gte=searched[0:4],
-                                        publication_date__lt=searched[-4:])
-    else:
-        books = Book.objects.all()
+    if request.method not in ["GET", "POST"]:
+        return render(request, template_name="status_code.html", status=405)
+
+    if request.method == "GET":
+        return render(request, template_name='search.html',
+                      context={'books': Book.objects.all()})
+
+    searched = request.POST['searched']
+    books = Book.objects.filter(title__contains=searched)
+    if not books:
+        books = Book.objects.filter(author__contains=searched)
+    if not books:
+        books = Book.objects.filter(language=searched)
+    if not books:
+        books = Book.objects.filter(publication_date__gte=searched[0:4],
+                                    publication_date__lt=searched[-4:])
     return render(request, template_name='search.html',
                   context={'books': books})
 
@@ -71,47 +75,38 @@ def get_name_to_search(request):
 
 def import_books(request):
     name_to_search = request.GET.get('book_id')
-    get_api = requests.get(
-        f'https://www.googleapis.com/books/v1/volumes?q={name_to_search}')
+    response = requests.get(
+        f'https://www.googleapis.com/books/v1/volumes?q={name_to_search}'
+    )
 
-    if get_api.status_code != 200:
+    if response.status_code != 200:
         return render(request, template_name='status_code.html',
-                      context={'status_code': get_api.status_code})
+                      context={'status_code': response.status_code})
 
-    try:
-        books_to_add = get_api.json()['items']
-        for book in books_to_add:
-            try:
-                if Book.objects.filter(title=book['volumeInfo']['title']):
-                    continue
-                else:
-                    publication_date = split_date(
-                        book['volumeInfo']['publishedDate'])
+    books_to_add = response.json()['items']
+    for book in books_to_add:
+        if Book.objects.filter(title=book['volumeInfo']['title']):
+            continue
 
-                    Book.objects.create(
-                        title=book['volumeInfo']['title'],
-                        author=book['volumeInfo']['authors'][0],
-                        publication_date=publication_date,
-                        ISBN_number=book['volumeInfo']['industryIdentifiers']
-                        [0]['identifier'],
-                        pages=book['volumeInfo']['pageCount'],
-                        preview_link=book['volumeInfo']['previewLink'],
-                        language=book['volumeInfo']['language']
-                    )
+        volume_info = book['volumeInfo']
+        publication_date = parse_year(volume_info['publishedDate'])
 
-            except (KeyError or TypeError):
-                print('object cannot be added - missing data')
-                continue
-
-    except (KeyError or TypeError):
-        return render(request, template_name='status_code.html',
-                      context={'status_code': get_api.status_code})
+        authors = volume_info.get("authors", [])
+        Book.objects.create(
+            title=volume_info['title'],
+            author=",".join(authors),
+            publication_date=publication_date,
+            ISBN_number=volume_info['industryIdentifiers'][0]['identifier'],
+            pages=volume_info.get('pageCount'),
+            preview_link=volume_info['previewLink'],
+            language=volume_info['language']
+        )
 
     return render(request, template_name='book_list.html',
                   context={'books': Book.objects.all()})
 
 
-def split_date(date_to_split):
+def parse_year(date_to_split):
     year = date_to_split.split('-')[0]
     return int(year)
 
